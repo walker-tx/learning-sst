@@ -8,7 +8,7 @@ import {
   SignUpCommand,
   GetUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import { createCookie, redirect } from "@remix-run/node";
+import { createCookie, json, redirect } from "@remix-run/node";
 import Srp from "aws-cognito-srp-client";
 
 const cookieSettings = {
@@ -51,7 +51,15 @@ export const authenticate = async (username: string, password: string) => {
     ClientId: process.env.REMIX_APP_AWS_USER_POOL_CLIENT_ID,
   });
 
-  const initiateAuthResult = await client.send(initiateAuthCommand);
+  let initiateAuthResult;
+  try {
+    initiateAuthResult = await client.send(initiateAuthCommand);
+  } catch (err: any) {
+    throw json(null, {
+      status: err?.$metadata?.httpStatusCode || 400,
+      statusText: err.__type,
+    });
+  }
 
   const { SRP_B, SALT, SECRET_BLOCK, USERNAME } =
     initiateAuthResult.ChallengeParameters!;
@@ -101,6 +109,8 @@ export const authenticate = async (username: string, password: string) => {
 
     return redirect("/", { headers });
   }
+
+  return;
 };
 
 export const signUp = async (username: string, password: string) => {

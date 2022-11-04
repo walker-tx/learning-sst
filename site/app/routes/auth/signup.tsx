@@ -1,5 +1,5 @@
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
-import { Form } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 import { signUp } from "~/auth.server";
 import Button from "~/components/button";
 import Input from "~/components/input";
@@ -39,6 +39,9 @@ export default () => {
       <Input type="password" name="confirmPassword" />
       <hr className="my-4" />
       <Button type="submit">Sign Up</Button>
+      <sub className="mt-4 text-center text-slate-500">
+        Already have an account? <Link to="/auth/login">Log in</Link>.
+      </sub>
     </Form>
   );
 };

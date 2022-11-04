@@ -1,5 +1,6 @@
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
-import { Form } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import { Form, Link, useCatch, useTransition } from "@remix-run/react";
 import React from "react";
 import { authenticate } from "~/auth.server";
 import Input from "~/components/input";
@@ -22,6 +23,8 @@ export const action: ActionFunction = async ({ request, context }) => {
 };
 
 export default () => {
+  const transition = useTransition();
+
   return (
     <Form
       className="min-w-fit w-1/2 max-w-md flex flex-col border-2 rounded p-4"
@@ -31,23 +34,41 @@ export default () => {
       <label htmlFor="email" className="mt-2">
         Email
       </label>
-      <Input type="email" name="email" />
+      <Input type="email" name="email" disabled={transition.state !== "idle"} />
       <label htmlFor="password" className="mt-2">
         Password
       </label>
-      <Input type="password" name="password" />
+      <Input
+        type="password"
+        name="password"
+        disabled={transition.state !== "idle"}
+      />
       <hr className="my-4" />
-      <Button type="submit">Log In</Button>
+      <Button type="submit" disabled={transition.state !== "idle"}>
+        {transition.state !== "idle" ? "Logging In..." : "Log In"}
+      </Button>
       <sub className="mt-4 text-center text-slate-500">
-        Not a user yet? <a href="/auth/signup">Sign up</a>.
+        Not a user yet? <Link to="/auth/signup">Sign up</Link>.
       </sub>
     </Form>
   );
 };
 
-export const ErrorBoundary = ({ error }: { error: Error }) => {
-  console.log({ error });
+export const CatchBoundary = () => {
+  const caught = useCatch();
+  // if (caught.statusText === "User")
+  return (
+    <div>
+      <h1>Caught</h1>
+      <p>Status: {caught.status}</p>
+      <pre>
+        <code>{caught.statusText}</code>
+      </pre>
+    </div>
+  );
+};
 
+export const ErrorBoundary = ({ error }: { error: Error }) => {
   return (
     <>
       <h2>Problem!</h2>
