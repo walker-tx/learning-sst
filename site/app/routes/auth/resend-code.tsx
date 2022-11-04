@@ -2,7 +2,7 @@ import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useLoaderData, useTransition } from "@remix-run/react";
 import { useMemo } from "react";
-import { confirmSignUp } from "~/auth.server";
+import { resendConfirmationCode } from "~/auth.server";
 import Button from "~/components/button";
 import Input from "~/components/input";
 
@@ -18,18 +18,23 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
 export const action: ActionFunction = async ({ request }) => {
   const body = await request.formData();
   const email = body.get("email") as string | null;
-  const code = body.get("code") as string | null;
 
-  if (!email || !code) {
+  if (!email) {
     throw Error("Invalid input");
   }
 
-  const res = await confirmSignUp(email, code);
-  if (res.$metadata.httpStatusCode !== 200) {
-    // return an error or something...
+  /**
+   * ResendResult Failure Cases:
+   * - The account doesn't exist.
+   * - The account has already been confirmed.
+   */
+  const resendResult = await resendConfirmationCode(email);
+
+  if (resendResult.$metadata.httpStatusCode !== 200) {
+    throw Error("There was a problem sending the error code.");
   }
 
-  return redirect("/auth/login");
+  return redirect(`/auth/confirm?un=${encodeURIComponent(email)}`);
 };
 
 export default () => {
@@ -38,39 +43,30 @@ export default () => {
 
   const formDisabled = useMemo(() => {
     return transition.state !== "idle";
-  }, [transition]);
+  }, [transition.state]);
 
   return (
     <Form
       className="min-w-fit w-1/2 max-w-md flex flex-col border-2 rounded p-4"
       method="post"
-      contentEditable={false}
     >
-      <h2 className="mt-0 mb-2">Account Confirmation</h2>
-      <p className="prose-sm mb-0 bg-blue-200 border-2 border-blue-300 p-2 rounded-md">
-        Check your email inbox for a 6-digit confirmation code. Paste the code
-        below.
-      </p>
+      <h2 className="mt-0 mb-2">Resend Confirmation</h2>
+      <label htmlFor="email" className="mt-2">
+        Email
+      </label>
       <fieldset className="flex flex-col" disabled={formDisabled}>
-        <label htmlFor="email" className="mt-2">
-          Email
-        </label>
         <Input
           type="email"
           name="email"
           defaultValue={loaderData?.username || undefined}
         />
-        <label htmlFor="password" className="mt-2">
-          Confirmation Code
-        </label>
-        <Input type="password" name="code" />
         <hr className="my-4" />
         <Button type="submit">
-          {transition.state === "idle" ? "Confirm" : "Loading..."}
+          {transition.state === "idle" ? "Send Code" : "Loading..."}
         </Button>
       </fieldset>
       <sub className="mt-4 mb-2 text-center text-slate-500">
-        Need another code? <Link to="/auth/resend-code">Click here</Link>.
+        Already have a code? <Link to="/auth/confirm">Click here</Link>.
       </sub>
     </Form>
   );

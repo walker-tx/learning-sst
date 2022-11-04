@@ -47,7 +47,7 @@ export default () => {
       <Button type="submit" disabled={transition.state !== "idle"}>
         {transition.state !== "idle" ? "Logging In..." : "Log In"}
       </Button>
-      <sub className="mt-4 text-center text-slate-500">
+      <sub className="mt-4 mb-2 text-center text-slate-500">
         Not a user yet? <Link to="/auth/signup">Sign up</Link>.
       </sub>
     </Form>
@@ -56,7 +56,18 @@ export default () => {
 
 export const CatchBoundary = () => {
   const caught = useCatch();
-  // if (caught.statusText === "User")
+
+  if (caught.statusText === "UserNotConfirmedException")
+    return (
+      <div className="text-center min-w-fit w-1/2 max-w-md flex flex-col border-2 rounded p-4">
+        <h1>Confirm Your Account</h1>
+        <p>You need to confirm your account before you can log in.</p>
+        <span>
+          <Link to="/auth/confirm">Confirm your account</Link>.
+        </span>
+      </div>
+    );
+
   return (
     <div>
       <h1>Caught</h1>

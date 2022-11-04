@@ -7,6 +7,7 @@ import {
   RespondToAuthChallengeCommand,
   SignUpCommand,
   GetUserCommand,
+  ResendConfirmationCodeCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { createCookie, json, redirect } from "@remix-run/node";
 import Srp from "aws-cognito-srp-client";
@@ -134,7 +135,16 @@ export const confirmSignUp = async (username: string, code: string) => {
     ConfirmationCode: code,
   });
 
-  return await client.send(confirmSignUpCommand);
+  return client.send(confirmSignUpCommand);
+};
+
+export const resendConfirmationCode = async (username: string) => {
+  const resendConfirmationCommand = new ResendConfirmationCodeCommand({
+    ClientId: process.env.REMIX_APP_AWS_USER_POOL_CLIENT_ID,
+    Username: username,
+  });
+
+  return client.send(resendConfirmationCommand);
 };
 
 /**

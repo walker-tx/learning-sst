@@ -39,7 +39,7 @@ export default () => {
       <Input type="password" name="confirmPassword" />
       <hr className="my-4" />
       <Button type="submit">Sign Up</Button>
-      <sub className="mt-4 text-center text-slate-500">
+      <sub className="mt-4 mb-2 text-center text-slate-500">
         Already have an account? <Link to="/auth/login">Log in</Link>.
       </sub>
     </Form>

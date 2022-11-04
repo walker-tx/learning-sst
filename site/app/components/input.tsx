@@ -7,7 +7,12 @@ const Input: React.FC<
     HTMLInputElement
   >
 > = (props) => {
-  return <input className="border-2 rounded pl-2" {...props} />;
+  return (
+    <input
+      className="border-2 rounded pl-2 disabled:bg-slate-100 disabled:cursor-not-allowed"
+      {...props}
+    />
+  );
 };
 
 export default Input;
