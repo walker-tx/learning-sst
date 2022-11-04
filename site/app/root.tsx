@@ -10,6 +10,8 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import { Amplify } from "aws-amplify";
+import type { LinksFunction } from "@remix-run/node";
+import styles from "./tailwind.css";
 
 export const loader: LoaderFunction = async () => {
   return json({
@@ -29,6 +31,8 @@ export const meta: MetaFunction = () => ({
   title: "New Remix App",
   viewport: "width=device-width,initial-scale=1",
 });
+
+export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 
 export default function App() {
   const loaderData = useLoaderData();
@@ -60,12 +64,12 @@ export default function App() {
   });
 
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <head>
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="h-full w-full p-4 prose max-w-none">
         <Outlet />
         <ScrollRestoration />
         <Scripts />

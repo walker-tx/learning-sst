@@ -2,8 +2,13 @@
   "private": true,
   "sideEffects": false,
   "scripts": {
-    "build": "sst-env -- remix build",
-    "dev": "sst-env -- remix dev",
+    "build": "run-s build:*",
+    "build:css": "yarn run generate:css -- --minify",
+    "build:remix": "sst-env -- remix build",
+    "dev": "run-p dev:css dev:remix",
+    "dev:css": "yarn run generate:css -- --watch",
+    "dev:remix": "sst-env -- remix dev",
+    "generate:css": "tailwindcss -o ./app/tailwind.css",
     "start": "remix-serve build"
   },
   "dependencies": {
@@ -21,11 +26,13 @@
     "@remix-run/dev": "^1.7.4",
     "@remix-run/eslint-config": "^1.7.4",
     "@serverless-stack/static-site-env": "^1.15.16",
+    "@tailwindcss/typography": "^0.5.7",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
     "eslint": "^8.23.1",
     "tailwindcss": "^3.2.1",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "yarn-run-all": "^3.1.1"
   },
   "engines": {
     "node": ">=14"

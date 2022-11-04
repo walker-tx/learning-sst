@@ -2,8 +2,11 @@ import {
   AuthFlowType,
   ChallengeNameType,
   CognitoIdentityProviderClient,
+  ConfirmSignUpCommand,
   InitiateAuthCommand,
   RespondToAuthChallengeCommand,
+  SignUpCommand,
+  GetUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { createCookie, redirect } from "@remix-run/node";
 import Srp from "aws-cognito-srp-client";
@@ -25,17 +28,24 @@ export const cookieRefreshToken = createCookie(
   cookieSettings
 );
 
+const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
+
+/**
+ * Signs a user in via cognito. Stores the access, id, and refresh tokens in cookies,
+ * then redirects if successful.
+ *
+ * @param username
+ * @param password
+ * @returns Redirect
+ */
 export const authenticate = async (username: string, password: string) => {
   const srp = new Srp(process.env.REMIX_APP_AWS_USER_POOL_ID!);
   const SRP_A = srp.getA();
-
-  const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
 
   const initiateAuthCommand = new InitiateAuthCommand({
     AuthFlow: AuthFlowType.USER_SRP_AUTH,
     AuthParameters: {
       USERNAME: username,
-      // PASSWORD: password,
       SRP_A,
     },
     ClientId: process.env.REMIX_APP_AWS_USER_POOL_CLIENT_ID,
@@ -72,23 +82,56 @@ export const authenticate = async (username: string, password: string) => {
   if (challengeResult.$metadata.httpStatusCode) {
     headers.append(
       "Set-Cookie",
-      await cookieAccessToken.serialize({
-        access_token: challengeResult.AuthenticationResult!.AccessToken,
-      })
+      await cookieAccessToken.serialize(
+        challengeResult.AuthenticationResult!.AccessToken
+      )
     );
     headers.append(
       "Set-Cookie",
-      await cookieIdToken.serialize({
-        id_token: challengeResult.AuthenticationResult!.IdToken,
-      })
+      await cookieIdToken.serialize(
+        challengeResult.AuthenticationResult!.IdToken
+      )
     );
     headers.append(
       "Set-Cookie",
-      await cookieRefreshToken.serialize({
-        refresh_token: challengeResult.AuthenticationResult!.RefreshToken,
-      })
+      await cookieRefreshToken.serialize(
+        challengeResult.AuthenticationResult!.RefreshToken
+      )
     );
 
     return redirect("/", { headers });
   }
+};
+
+export const signUp = async (username: string, password: string) => {
+  const signUpCommand = new SignUpCommand({
+    ClientId: process.env.REMIX_APP_AWS_USER_POOL_CLIENT_ID,
+    Username: username,
+    Password: password,
+  });
+
+  const res = await client.send(signUpCommand);
+
+  if (res.$metadata.httpStatusCode === 200) {
+    return redirect(`/auth/confirm?un=${encodeURIComponent(username)}`);
+  }
+};
+
+export const confirmSignUp = async (username: string, code: string) => {
+  const confirmSignUpCommand = new ConfirmSignUpCommand({
+    ClientId: process.env.REMIX_APP_AWS_USER_POOL_CLIENT_ID,
+    Username: username,
+    ConfirmationCode: code,
+  });
+
+  return await client.send(confirmSignUpCommand);
+};
+
+/**
+ * Gets a current user based on an access token stored in cookies
+ */
+export const getCurrentUser = async (accessToken: string) => {
+  const getUserCommand = new GetUserCommand({ AccessToken: accessToken });
+
+  return await client.send(getUserCommand);
 };
