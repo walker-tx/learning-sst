@@ -9,25 +9,8 @@ import {
   GetUserCommand,
   ResendConfirmationCodeCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import { createCookie, json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import Srp from "aws-cognito-srp-client";
-
-const cookieSettings = {
-  maxAge: 60 * 60 * 30,
-  secure: process.env.NODE_ENV === "production",
-  secrets: [process.env.REMIX_APP_SESSION_SECRET!],
-  httpOnly: true,
-};
-
-export const cookieAccessToken = createCookie(
-  "cognitoAccessToken",
-  cookieSettings
-);
-export const cookieIdToken = createCookie("cognitoIdToken", cookieSettings);
-export const cookieRefreshToken = createCookie(
-  "cognitoRefreshToken",
-  cookieSettings
-);
 
 const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
 
@@ -52,15 +35,7 @@ export const authenticate = async (username: string, password: string) => {
     ClientId: process.env.REMIX_APP_AWS_USER_POOL_CLIENT_ID,
   });
 
-  let initiateAuthResult;
-  try {
-    initiateAuthResult = await client.send(initiateAuthCommand);
-  } catch (err: any) {
-    throw json(null, {
-      status: err?.$metadata?.httpStatusCode || 400,
-      statusText: err.__type,
-    });
-  }
+  const initiateAuthResult = await client.send(initiateAuthCommand);
 
   const { SRP_B, SALT, SECRET_BLOCK, USERNAME } =
     initiateAuthResult.ChallengeParameters!;
@@ -87,31 +62,7 @@ export const authenticate = async (username: string, password: string) => {
 
   const challengeResult = await client.send(respondToAuthChallengeCommand);
 
-  const headers = new Headers();
-  if (challengeResult.$metadata.httpStatusCode) {
-    headers.append(
-      "Set-Cookie",
-      await cookieAccessToken.serialize(
-        challengeResult.AuthenticationResult!.AccessToken
-      )
-    );
-    headers.append(
-      "Set-Cookie",
-      await cookieIdToken.serialize(
-        challengeResult.AuthenticationResult!.IdToken
-      )
-    );
-    headers.append(
-      "Set-Cookie",
-      await cookieRefreshToken.serialize(
-        challengeResult.AuthenticationResult!.RefreshToken
-      )
-    );
-
-    return redirect("/", { headers });
-  }
-
-  return;
+  return challengeResult.AuthenticationResult;
 };
 
 export const signUp = async (username: string, password: string) => {

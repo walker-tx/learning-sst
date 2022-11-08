@@ -1,10 +1,18 @@
+import {
+  CognitoIdentityProviderServiceException,
+  UserNotFoundException,
+} from "@aws-sdk/client-cognito-identity-provider";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Form, Link, useCatch, useTransition } from "@remix-run/react";
-import React from "react";
 import { authenticate } from "~/auth.server";
-import Input from "~/components/input";
 import Button from "~/components/button";
+import Input from "~/components/input";
+import {
+  cookieAccessToken,
+  cookieIdToken,
+  cookieRefreshToken,
+} from "~/session.server";
 
 export const loader: LoaderFunction = async () => {
   return null;
@@ -15,11 +23,32 @@ export const action: ActionFunction = async ({ request, context }) => {
   const email = body.get("email");
   const password = body.get("password");
 
-  if (!email || !password) {
-    throw Error("Invalid input");
-  }
+  try {
+    const authResult = await authenticate(email as string, password as string);
 
-  return await authenticate(email as string, password as string);
+    // If successful, serialize auth tokens w/ cookies
+    const cookies = await Promise.all([
+      cookieAccessToken.serialize(authResult?.AccessToken!),
+      cookieIdToken.serialize(authResult?.AccessToken!),
+      cookieRefreshToken.serialize(authResult?.AccessToken!),
+    ]);
+
+    const headers = new Headers();
+    cookies.forEach((cookie) => headers.append("Set-Cookie", cookie));
+    return redirect("/", { headers });
+  } catch (err: any) {
+    if (err instanceof CognitoIdentityProviderServiceException) {
+      console.log("COGNITO EXCEPTION");
+      throw json(null, {
+        status: err?.$metadata?.httpStatusCode || 400,
+        statusText: err.message,
+      });
+    } else
+      throw json(null, {
+        status: 500,
+        statusText: "Unknown error",
+      });
+  }
 };
 
 export default () => {
@@ -34,13 +63,19 @@ export default () => {
       <label htmlFor="email" className="mt-2">
         Email
       </label>
-      <Input type="email" name="email" disabled={transition.state !== "idle"} />
+      <Input
+        type="email"
+        name="email"
+        disabled={transition.state !== "idle"}
+        required
+      />
       <label htmlFor="password" className="mt-2">
         Password
       </label>
       <Input
         type="password"
         name="password"
+        required
         disabled={transition.state !== "idle"}
       />
       <hr className="my-4" />

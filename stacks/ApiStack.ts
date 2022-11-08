@@ -2,23 +2,39 @@ import {
   Api,
   ApiUserPoolAuthorizer,
   Cognito,
+  Config,
   StackContext,
   use,
 } from "@serverless-stack/resources";
 import { AuthStack } from "./AuthStack";
+import * as ssm from "aws-cdk-lib/aws-ssm";
 
 export function ApiStack({
   stack,
+  app,
 }: StackContext): Api<Record<string, ApiUserPoolAuthorizer>> {
-  const auth = use<Cognito>(AuthStack);
+  const auth = use(AuthStack);
+
+  const AUTH_USER_POOL_ID = ssm.StringParameter.valueForStringParameter(
+    stack,
+    `/sst/${app.name}/${stack.stage}/parameters/AUTH_USER_POOL_ID`
+  );
+  const AUTH_IDENTITY_POOL_ID = ssm.StringParameter.valueForStringParameter(
+    stack,
+    `/sst/${app.name}/${stack.stage}/parameters/AUTH_IDENTITY_POOL_ID`
+  );
+  const AUTH_USER_POOL_CLIENT_ID = ssm.StringParameter.valueForStringParameter(
+    stack,
+    `/sst/${app.name}/${stack.stage}/parameters/AUTH_USER_POOL_CLIENT_ID`
+  );
 
   const api = new Api<Record<string, ApiUserPoolAuthorizer>>(stack, "Api", {
     authorizers: {
       jwt: {
         type: "user_pool",
         userPool: {
-          id: auth.userPoolId,
-          clientIds: [auth.userPoolClientId],
+          id: AUTH_USER_POOL_ID,
+          clientIds: [AUTH_USER_POOL_CLIENT_ID],
         },
       },
     },
@@ -29,6 +45,8 @@ export function ApiStack({
       "GET /": "functions/lambda.handler",
     },
   });
+
+  new Config.Parameter(stack, "API_ENDPOINT", { value: api.url });
 
   stack.addOutputs({
     ApiEndpoint: api.url,

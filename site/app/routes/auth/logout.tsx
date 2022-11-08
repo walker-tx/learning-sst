@@ -4,7 +4,7 @@ import {
   cookieAccessToken,
   cookieIdToken,
   cookieRefreshToken,
-} from "~/auth.server";
+} from "~/session.server";
 
 export const loader: LoaderFunction = async () => {
   const headers = new Headers();
