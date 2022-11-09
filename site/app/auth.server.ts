@@ -9,18 +9,12 @@ import {
   GetUserCommand,
   ResendConfirmationCodeCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import { redirect } from "@remix-run/node";
 import Srp from "aws-cognito-srp-client";
 
 const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
 
 /**
- * Signs a user in via cognito. Stores the access, id, and refresh tokens in cookies,
- * then redirects if successful.
- *
- * @param username
- * @param password
- * @returns Redirect
+ * Signs a user in via cognito. Stores the access, id, and refresh tokens.
  */
 export const authenticate = async (username: string, password: string) => {
   const srp = new Srp(process.env.REMIX_APP_AWS_USER_POOL_ID!);
@@ -72,11 +66,7 @@ export const signUp = async (username: string, password: string) => {
     Password: password,
   });
 
-  const res = await client.send(signUpCommand);
-
-  if (res.$metadata.httpStatusCode === 200) {
-    return redirect(`/auth/confirm?un=${encodeURIComponent(username)}`);
-  }
+  return client.send(signUpCommand);
 };
 
 export const confirmSignUp = async (username: string, code: string) => {
@@ -104,5 +94,5 @@ export const resendConfirmationCode = async (username: string) => {
 export const getCurrentUser = async (accessToken: string) => {
   const getUserCommand = new GetUserCommand({ AccessToken: accessToken });
 
-  return await client.send(getUserCommand);
+  return client.send(getUserCommand);
 };

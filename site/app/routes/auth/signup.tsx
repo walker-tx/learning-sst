@@ -1,4 +1,6 @@
+import { CognitoIdentityProviderServiceException } from "@aws-sdk/client-cognito-identity-provider";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Form, Link } from "@remix-run/react";
 import { signUp } from "~/auth.server";
 import Button from "~/components/button";
@@ -10,14 +12,24 @@ export const loader: LoaderFunction = async () => {
 
 export const action: ActionFunction = async ({ request, context }) => {
   const body = await request.formData();
-  const email = body.get("email") as string | null;
-  const password = body.get("password") as string | null;
+  const email = body.get("email") as string;
+  const password = body.get("password") as string;
 
-  if (!email || !password) {
-    throw Error("Invalid input");
+  try {
+    await signUp(email, password);
+    return redirect(`/auth/confirm=${encodeURIComponent(email)}`);
+  } catch (err: any) {
+    if (err instanceof CognitoIdentityProviderServiceException) {
+      throw json(null, {
+        status: err?.$metadata?.httpStatusCode || 400,
+        statusText: err.message,
+      });
+    } else
+      throw json(null, {
+        status: 500,
+        statusText: "Unknown error",
+      });
   }
-
-  return await signUp(email, password);
 };
 
 export default () => {
@@ -43,14 +55,5 @@ export default () => {
         Already have an account? <Link to="/auth/login">Log in</Link>.
       </sub>
     </Form>
-  );
-};
-
-export const ErrorBoundary = ({ error }: { error: Error }) => {
-  return (
-    <>
-      <h2>Problem!</h2>
-      <p>{error.message}</p>
-    </>
   );
 };

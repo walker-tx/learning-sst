@@ -75,14 +75,3 @@ export default () => {
     </Form>
   );
 };
-
-export const ErrorBoundary = ({ error }: { error: Error }) => {
-  console.log({ error });
-
-  return (
-    <>
-      <h2>Problem!</h2>
-      <p>{error.message}</p>
-    </>
-  );
-};

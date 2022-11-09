@@ -11,7 +11,8 @@ import {
 } from "@remix-run/react";
 import { Amplify } from "aws-amplify";
 import type { LinksFunction } from "@remix-run/node";
-import styles from "./tailwind.css";
+import twStyles from "./tailwind.css";
+import faStyles from "@fortawesome/fontawesome-svg-core/styles.css";
 
 export const loader: LoaderFunction = async () => {
   return json({
@@ -32,7 +33,10 @@ export const meta: MetaFunction = () => ({
   viewport: "width=device-width,initial-scale=1",
 });
 
-export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: twStyles },
+  { rel: "stylesheet", href: faStyles },
+];
 
 export default function App() {
   const loaderData = useLoaderData();
