@@ -5,6 +5,9 @@ module.exports = {
   publicPath: "/build/",
   serverBuildPath: "build/index.js",
   serverBuildTarget: "node-cjs",
-  server: undefined
+  server: undefined,
+  serverDependenciesToBundle: [
+    "@test-sst-app/services"
+  ]
   // appDirectory: "app",
 };

@@ -15,6 +15,7 @@ export function ApiStack({
 }: StackContext): Api<Record<string, ApiUserPoolAuthorizer>> {
   const auth = use(AuthStack);
 
+  // Auth params
   const AUTH_USER_POOL_ID = ssm.StringParameter.valueForStringParameter(
     stack,
     `/sst/${app.name}/${stack.stage}/parameters/AUTH_USER_POOL_ID`

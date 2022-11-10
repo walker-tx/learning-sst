@@ -7,6 +7,7 @@ import {
 } from "@serverless-stack/resources";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import { ApiStack } from "./ApiStack";
+import { getStringParameter } from "./helpers";
 
 export function SiteStack({ stack, app }: StackContext): RemixSite {
   const api = use<Api<Record<string, ApiUserPoolAuthorizer>>>(ApiStack);
@@ -24,6 +25,11 @@ export function SiteStack({ stack, app }: StackContext): RemixSite {
     `/sst/${app.name}/${stack.stage}/parameters/AUTH_USER_POOL_CLIENT_ID`
   );
 
+  const TABLE_ONETABLE_NAME = getStringParameter(
+    { stack, app },
+    "TABLE_ONETABLE_NAME"
+  );
+
   // -- FE STACK --
   const site = new RemixSite(stack, "Site", {
     path: "site/",
@@ -35,6 +41,7 @@ export function SiteStack({ stack, app }: StackContext): RemixSite {
       REMIX_APP_AWS_IDENTITY_POOL_ID: AUTH_IDENTITY_POOL_ID!,
       REMIX_APP_AWS_USER_POOL_CLIENT_ID: AUTH_USER_POOL_CLIENT_ID,
       REMIX_APP_SESSION_SECRET: process.env.SESSION_SECRET!,
+      TABLE_ONETABLE_NAME,
     },
   });
 

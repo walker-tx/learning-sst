@@ -1,37 +1,34 @@
 import { Link } from "@remix-run/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
 
 export default () => {
   return (
-    <div className="flex flex-col items-center w-full">
-      <main className="w-1/2 max-w-lg border-2 rounded p-4 text-center flex flex-col justify-end items-center">
+    <div className="flex flex-col items-center">
+      <main className="w-auto max-w-lg border-2 rounded p-4 text-center flex flex-col justify-end items-center">
         <img
           src="https://media.istockphoto.com/id/1270067126/photo/smiling-indian-man-looking-at-camera.jpg?s=612x612&w=0&k=20&c=ovIQ5GPurLd3mOUj82jB9v-bjGZ8updgy1ACaHMeEC0="
           className="rounded-full aspect-square object-cover w-48 drop-shadow-lg border-white border-4"
           alt="person's face"
         />
-        <header className="mb-4">
+        <header className=" flex flex-col items-center w-10/12">
           <h1 className="mb-2">Stan Lee</h1>
-          <sub>Company Name | Position</sub>
-          <ul className="list-none flex [&>*]:border-2 space-x-2 p-0">
-            <li className="rounded-md flex p-1 px-2 items-center text-sm">
-              {/* <FontAwesomeIcon icon={{prefix: }} /> */}
+          <small>Company Name | Position</small>
+          <ul className="w-10/12 list-none flex flex-wrap justify-center p-0">
+            <li className="m-0.5 border-2 rounded-md flex p-1 px-2 items-center text-sm">
               <FaGithub className="mr-1" />
               GitHub
             </li>
-            <li className="rounded-md flex p-1 px-2 items-center text-sm">
+            <li className="m-0.5 border-2 rounded-md flex p-1 px-2 items-center text-sm">
               <FaLinkedin className="mr-1" />
               LinkedIn
             </li>
-            <li className="rounded-md flex p-1 px-2 items-center text-sm">
+            <li className="m-0.5 border-2 rounded-md flex p-1 px-2 items-center text-sm">
               <FaTwitter className="mr-1" />
               Twitter
             </li>
           </ul>
         </header>
-        <section>
+        <section className="w-10/12">
           <p>
             I am a construction technologist whose heart beats fast for helping
             skilled trades workers, labor supervision, and project management

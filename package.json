@@ -20,8 +20,14 @@
     "typescript": "^4.8.4",
     "vitest": "^0.24.5"
   },
-  "workspaces": [
-    "services"
-  ],
+  "workspaces": {
+    "packages": [
+      "services",
+      "site"
+    ],
+    "nohoist": [
+      "services"
+    ]
+  },
   "dependencies": {}
 }

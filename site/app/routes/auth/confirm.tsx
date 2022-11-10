@@ -26,6 +26,8 @@ export const action: ActionFunction = async ({ request }) => {
 
   const res = await confirmSignUp(email, code);
   if (res.$metadata.httpStatusCode !== 200) {
+    console.log("there was a problem");
+    console.log(res);
     // return an error or something...
   }
 

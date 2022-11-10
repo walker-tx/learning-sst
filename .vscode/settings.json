@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["isbot"],
+  "cSpell.words": ["isbot", "ONETABLE"],
   "editor.quickSuggestions": {
     "strings": true // forces VS Code to trigger completions when editing "string" content
   },
@@ -7,5 +7,11 @@
     "tw`([^`]*)", // tw`...`
     "tw\\.[^`]+`([^`]*)`", // tw.xxx<xxx>`...`
     "tw\\(.*?\\).*?`([^`]*)" // tw(Component)<xxx>`...`
-  ]
+  ],
+  "[javascript]": {
+    "editor.tabSize": 2
+  },
+  "[javascriptreact]": {
+    "editor.tabSize": 2
+  }
 }

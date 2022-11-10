@@ -17,7 +17,7 @@ export const action: ActionFunction = async ({ request, context }) => {
 
   try {
     await signUp(email, password);
-    return redirect(`/auth/confirm=${encodeURIComponent(email)}`);
+    return redirect(`/auth/confirm?un=${encodeURIComponent(email)}`);
   } catch (err: any) {
     if (err instanceof CognitoIdentityProviderServiceException) {
       throw json(null, {
